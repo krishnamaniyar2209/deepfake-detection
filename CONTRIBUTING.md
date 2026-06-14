@@ -180,15 +180,18 @@ Final version
 
 Notebooks follow numbered order:
 ```
-01_data_ingestion.ipynb
-02_eda.ipynb
-03_preprocessing.ipynb
-04_model_baseline.ipynb
-05_model_advanced.ipynb
-06_evaluation.ipynb
+01_data_ingestion.ipynb          # Dataset discovery, indexing, splitting
+02_eda.ipynb                     # Exploratory data analysis
+03_preprocessing.ipynb           # Frame extraction, face detection, tensor prep
+04_model_baseline.ipynb          # ResNet-18 baseline
+05_model_advanced.ipynb          # EfficientNet-B4
+06_advanced_model_r3d18.ipynb    # R3D-18 (3D CNN)
+07_advanced_model_vit.ipynb      # ViT-B/16
+08_advanced_model_raft.ipynb     # R3D-18 + RAFT optical flow
+09_evaluation.ipynb              # Cross-dataset evaluation, ensemble, leaderboard
 ```
 
-Do **not** rename or renumber notebooks without team agreement.
+Do **not** rename or renumber notebooks without team agreement. (Renaming via the GitHub web editor or Colab can silently blank a notebook — rename locally and verify the content before pushing.)
 
 ---
 

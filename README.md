@@ -1,9 +1,10 @@
 # Robust Deepfake Detection Using Learning-Based Computer Vision Methods
 
-Binary deepfake detection with a focus on building robust models that **generalize across multiple datasets**. The goal is not just high accuracy on FaceForensics++, but strong cross-dataset performance on unseen data sources such as CelebDF, DFDC, and others — ensuring real-world applicability for content moderation.
+Binary deepfake detection with a focus on building models that **generalize across datasets**. The goal isn't just high accuracy on FaceForensics++ — it's strong **zero-shot performance on unseen sources** like Celeb-DF, the property that actually matters for real-world content moderation.
 
 **Course:** CS 668 — Analytics Capstone
 **Instructor:** Dr. Krishna Bathula
+**Status:** ✅ Complete
 
 > 📌 **About this repository:** This is my copy of a **4-person team capstone**. The original team repository is **[abraraltaf92/deepfake-detection](https://github.com/abraraltaf92/deepfake-detection)**.
 > **My role:** co-developer — one of the two engineers who built the end-to-end ML pipeline (data ingestion, preprocessing, model training, and cross-dataset evaluation).
@@ -21,97 +22,61 @@ Binary deepfake detection with a focus on building robust models that **generali
 
 ---
 
-## Current Phase
+## Approach
 
-**Phase 2: Advanced Model Architectures**
+- **Train / validate / test** on FaceForensics++ (C23) — 6 manipulation types (Deepfakes, Face2Face, FaceShifter, FaceSwap, NeuralTextures, + originals).
+- **Zero-shot out-of-distribution test** on **Celeb-DF v2** (6,529 videos) — models never see this data during training.
+- Compare **5 architectures + a soft-vote ensemble**, scored by **cross-dataset Celeb-DF AUC** and the **generalization gap** (Δgen = FF++ AUC − Celeb-DF AUC; lower = better).
 
-- Exploring 3D CNN + LSTM for temporal feature learning
-- Investigating attention mechanisms and Vision Transformers (ViT)
-- Target: improve cross-dataset generalization beyond baseline ResNet-18
-
----
-
-## Weekly Goals
-
-- [ ] Implement 3D CNN with temporal pooling
-- [ ] Research ViT-based approaches for frame-level deepfake detection
-- [ ] Begin cross-dataset evaluation pipeline (train on FF++, test on CelebDF)
-- [ ] Document model experiment results
+Face crops (224×224) are extracted per frame; models are trained with class-weighted loss to handle the real/fake imbalance.
 
 ---
 
-## Progress Log
+## Results
 
-| Date | Milestone | Status |
-|------|-----------|--------|
-| 02-15-2026 | Project setup and dataset acquisition | ✅ Done |
-| 02-23-2026 | EDA and data analysis complete | ✅ Done |
-| 03-05-2026 | Preprocessing pipeline (frame extraction, face detection, sampling) | ✅ Done |
-| 03-15-2026 | Baseline ResNet-18 binary classifier trained | ✅ Done |
-| 03-23-2026 | GitHub repo setup with version control workflow | ✅ Done |
-| XX-XX-2026 | Advanced model exploration (3D CNN, LSTM, ViT) | 🔄 In Progress |
-| XX-XX-2026 | Cross-dataset generalization evaluation | ⬚ Upcoming |
+### Final Leaderboard (sorted by Celeb-DF AUC — the deployment-relevant metric)
 
----
+| Rank | Model | FF++ Acc | FF++ F1 | FF++ AUC | Celeb-DF Acc | Celeb-DF F1 | Celeb-DF AUC | Δgen (AUC) |
+|------|-------|----------|---------|----------|--------------|-------------|--------------|------------|
+| 🥇 #1 | **Soft-Vote Ensemble** | 1.000 | 1.000 | 1.000 | 0.638 | 0.737 | **0.892** | **0.109** |
+| #2 | ViT-B/16 | 0.978 | 0.987 | 0.999 | 0.621 | 0.722 | 0.884 | 0.116 |
+| #3 | EfficientNet-B4 | 0.999 | 0.999 | 1.000 | 0.641 | 0.742 | 0.840 | 0.160 |
+| #4 | ResNet-18 (baseline) | 0.999 | 0.999 | 1.000 | 0.524 | 0.626 | 0.828 | 0.172 |
+| #5 | R3D-18 + RAFT (optical flow) | 0.884 | 0.926 | 0.961 | 0.446 | 0.530 | 0.802 | 0.159 |
+| #6 | R3D-18 (3D-CNN) | 0.999 | 0.999 | 1.000 | 0.635 | 0.744 | 0.756 | 0.244 |
 
-## Model Performance
+*Ensemble = equal-weight probability averaging over EfficientNet-B4, R3D-18, ViT-B/16, and R3D-18+RAFT.*
 
-### In-Dataset (FaceForensics++ C23)
+### Key Findings
 
-| Model | Accuracy | F1 Score | Val Accuracy | Epochs | Notes |
-|-------|----------|----------|--------------|--------|-------|
-| ResNet-18 (baseline) | 86% | 0.9333 | 89.67% | 15 | Class-weighted loss, 16 frames/video |
-| 3D CNN + LSTM | — | — | — | — | In progress |
-| ViT-based | — | — | — | — | Planned |
-
-### Cross-Dataset Generalization
-
-| Model | Trained On | Tested On | Accuracy | F1 Score | Notes |
-|-------|------------|-----------|----------|----------|-------|
-| ResNet-18 (baseline) | FF++ C23 | CelebDF | — | — | Pending |
-| ResNet-18 (baseline) | FF++ C23 | DFDC | — | — | Pending |
+- **Every model is near-perfect in-dataset (FF++ AUC ≈ 1.0) but drops sharply zero-shot on Celeb-DF** — the central, well-known challenge in deepfake detection. In-dataset accuracy alone is misleading; cross-dataset AUC is what counts.
+- **The soft-vote ensemble generalizes best** (Celeb-DF AUC **0.892**, smallest gap **0.109**) — combining diverse architectures beats any single model out-of-distribution.
+- **Among single models, ViT-B/16 wins** (Celeb-DF AUC 0.884, best generalization Δgen 0.116) — attention-based features transfer to unseen data better than 3D-CNNs here.
+- **R3D-18 (3D-CNN) had top in-dataset scores but the worst generalization** (Δgen 0.244) — a textbook case of overfitting to dataset-specific artifacts.
+- **Adding RAFT optical flow** to R3D-18 lowered in-dataset accuracy and did not improve cross-dataset AUC — temporal motion cues didn't transfer here.
 
 ---
 
-## Quick Start
+## Models
 
-1. **Clone this repo** to your Google Drive:
-   ```bash
-   # In Google Colab:
-   from google.colab import drive
-   drive.mount('/content/drive')
-   !git clone https://github.com/<your-username>/deepfake-detection.git /content/drive/MyDrive/deepfake-detection
-   ```
-
-2. **Download datasets** and place them in `data/raw/` inside the repo folder:
-   ```
-   deepfake-detection/
-   └── data/
-       └── raw/
-           └── ff-c23/FaceForensics++_C23/   ← put FF++ dataset here
-   ```
-   - [FaceForensics++ C23](https://github.com/ondyari/FaceForensics)
-   - [CelebDF v2](https://github.com/yuezunli/celeb-deepfakeforensics)
-
-3. **Update `REPO_ROOT`** in `configs/paths.py` if your Drive path differs (default: `/content/drive/MyDrive/deepfake-detection`)
-
-4. **Open notebooks in Google Colab** in numbered order:
-   ```
-   01_data_ingestion.ipynb → 02_eda.ipynb → 03_preprocessing.ipynb →
-   04_model_baseline.ipynb → 05_model_advanced.ipynb → 06_evaluation.ipynb
-   ```
-
-5. **See [CONTRIBUTING.md](CONTRIBUTING.md)** for team workflow and how to commit changes
+| Notebook | Model | Type |
+|----------|-------|------|
+| `04_model_baseline` | ResNet-18 | 2D CNN (baseline) |
+| `05_model_advanced` | EfficientNet-B4 | 2D CNN |
+| `06_advanced_model_r3d18` | R3D-18 | 3D CNN (spatiotemporal) |
+| `07_advanced_model_vit` | ViT-B/16 | Vision Transformer |
+| `08_advanced_model_raft` | R3D-18 + RAFT | 3D CNN + optical flow |
+| `09_evaluation` | Soft-vote ensemble | Combines all of the above |
 
 ---
 
-## Key Resources
+## Datasets
 
-- [FaceForensics++ Dataset](https://github.com/ondyari/FaceForensics)
-- [CelebDF v2 Dataset](https://github.com/yuezunli/celeb-deepfakeforensics)
-- [DFDC Dataset](https://ai.meta.com/datasets/dfdc/)
-- [Project Presentation (Midterm)](docs/references.md)
-- [Research Papers & References](docs/references.md)
+| Dataset | Use | Link |
+|---------|-----|------|
+| FaceForensics++ (C23) | Train / validation / test | [link](https://github.com/ondyari/FaceForensics) |
+| Celeb-DF v2 | Zero-shot cross-dataset test (6,529 videos) | [link](https://github.com/yuezunli/celeb-deepfakeforensics) |
+| DFDC | Reference | [link](https://ai.meta.com/datasets/dfdc/) |
 
 ---
 
@@ -119,19 +84,55 @@ Binary deepfake detection with a focus on building robust models that **generali
 
 ```
 deepfake-detection/
-├── README.md                          # Project dashboard (this file)
-├── CONTRIBUTING.md                    # Team workflow guide
+├── README.md                          # This file
+├── CONTRIBUTING.md                    # Team collaboration workflow
 ├── requirements.txt                   # Python dependencies
-├── .gitignore                         # Excluded files (data, models, checkpoints)
+├── .gitignore                         # Excludes data, models, credentials
 ├── configs/
 │   └── paths.py                       # Centralized path configuration
 ├── notebooks/
 │   ├── 01_data_ingestion.ipynb        # Dataset discovery, indexing, splitting
 │   ├── 02_eda.ipynb                   # Exploratory data analysis
 │   ├── 03_preprocessing.ipynb         # Frame extraction, face detection, tensor prep
-│   ├── 04_model_baseline.ipynb        # ResNet-18 baseline model
-│   ├── 05_model_advanced.ipynb        # Advanced architectures (3D CNN, LSTM, ViT)
-│   └── 06_evaluation.ipynb            # Cross-dataset evaluation & comparison
+│   ├── 04_model_baseline.ipynb        # ResNet-18 baseline
+│   ├── 05_model_advanced.ipynb        # EfficientNet-B4
+│   ├── 06_advanced_model_r3d18.ipynb  # R3D-18 (3D CNN)
+│   ├── 07_advanced_model_vit.ipynb    # ViT-B/16
+│   ├── 08_advanced_model_raft.ipynb   # R3D-18 + RAFT optical flow
+│   └── 09_evaluation.ipynb            # Cross-dataset evaluation, ensemble, leaderboard
 └── docs/
     └── references.md                  # Research papers and resources
 ```
+
+---
+
+## Quick Start
+
+The notebooks are designed for **Google Colab** (GPU) with data on Google Drive.
+
+1. **Clone the repo** into your Drive:
+   ```python
+   from google.colab import drive
+   drive.mount('/content/drive')
+   !git clone https://github.com/krishnamaniyar2209/deepfake-detection.git /content/drive/MyDrive/deepfake-detection
+   ```
+2. **Download datasets** into `data/raw/` (see the Datasets table). Model weights and data stay on Drive — they are **not** committed (see `.gitignore`).
+3. **Set `REPO_ROOT`** in `configs/paths.py` if your Drive path differs.
+4. **Run the notebooks in order** `01 → 09`. `09_evaluation.ipynb` reproduces the leaderboard above.
+
+---
+
+## Tech Stack
+
+`Python` · `PyTorch` · `torchvision` · `OpenCV` · `facenet-pytorch` · `scikit-learn` · `pandas` · `NumPy`
+
+---
+
+## Key Resources
+
+- [FaceForensics++](https://github.com/ondyari/FaceForensics) · [Celeb-DF v2](https://github.com/yuezunli/celeb-deepfakeforensics) · [DFDC](https://ai.meta.com/datasets/dfdc/)
+- [Research papers & references](docs/references.md)
+
+---
+
+*CS 668 Analytics Capstone — Pace University. See [CONTRIBUTING.md](CONTRIBUTING.md) for the team's collaboration workflow.*
