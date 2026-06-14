@@ -5,16 +5,19 @@ Binary deepfake detection with a focus on building robust models that **generali
 **Course:** CS 668 — Analytics Capstone
 **Instructor:** Dr. Krishna Bathula
 
+> 📌 **About this repository:** This is my copy of a **4-person team capstone**. The original team repository is **[abraraltaf92/deepfake-detection](https://github.com/abraraltaf92/deepfake-detection)**.
+> **My role:** co-developer — one of the two engineers who built the end-to-end ML pipeline (data ingestion, preprocessing, model training, and cross-dataset evaluation).
+
 ---
 
 ## Team Members
 
-| Member | Focus Area |
-|--------|------------|
-| Abrar Altaf Lone | TBD |
-| Sajan Singh Shergill | TBD |
-| Muhammad Abdullah Zahid | TBD |
-| Krishna Kirit Maniyar | TBD |
+| Member | Role |
+|--------|------|
+| Krishna Kirit Maniyar | Model development & ML pipeline (co-developer) |
+| Abrar Altaf Lone | Model development & ML pipeline (co-developer) |
+| Sajan Singh Shergill | Literature review & research |
+| Muhammad Abdullah Zahid | Documentation & presentations |
 
 ---
 
